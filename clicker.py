@@ -283,7 +283,7 @@ class Clicker():
 
     def stop_func(self):
         while True:
-            self.user_input = input("What would you like to do? (pause, wait, timeout, elder, upgrade, garden, exit)").lower()
+            self.user_input = input("What would you like to do? (pause, wait, timeout, elder, upgrade, exit)").lower()
             if self.user_input == "timeout":
                 self.timeout_sequence()
                 break

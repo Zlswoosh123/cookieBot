@@ -17,7 +17,8 @@ import clicker
 from random import choice
 import traceback
 from garden import Garden
-chrome_driver_path = "C:\Development\chromedriver.exe"
+
+chrome_driver_path = "C:\Development\chromedriver.exe"  # https://chromedriver.chromium.org/downloads
 
 # start clicker
 clicker = clicker.Clicker()
@@ -32,22 +33,22 @@ wait_list = [30]
 # wait_list = [900, 2400, 3600, 5400]
 
 # timeouts
-timeout = time.time() + wait_period
-program_timeout = time.time() + 60 * 60 * 24 * 30  # 1 month
-save_timeout = time.time() + 3600
-print_timeout = time.time() + 60
-elder_timeout = time.time() + 5
-garden_timeout = time.time() + 1800
+timeout = time.time() + wait_period  # main timeout used for init buying logic
+program_timeout = time.time() + 60 * 60 * 24 * 30 * 12  # ~1 year
+save_timeout = time.time() + 3600  # save every hour
+print_timeout = time.time() + 60  # Prints time until main timeout
+elder_timeout = time.time() + 5  # clicks elder pledge
+garden_timeout = time.time() + 1800  # runs garden minigame
 
 print(f"startup timeout is: {timeout - time.time()}")
-
-# todo enable for prd
+# Close opening screens
 try:
     if EC.presence_of_element_located((By.CSS_SELECTOR, ".cc_btn")):
         driver.find_element(by="css selector", value=".cc_btn").click()
 except NoSuchElementException:
     pass
 
+# Close opening screens
 try:
     if EC.presence_of_element_located((By.CSS_SELECTOR, "#note-1 .close")):
         try:
@@ -57,12 +58,13 @@ try:
 except NoSuchElementException:
     pass
 
-clicker.find_tech()
+clicker.find_tech()  # buys tech right away, not actually needed
 
+# Main Loop
 while True:
-    clicker.gc = clicker.driver.find_elements(by="css selector", value=".shimmer")
-    while len(clicker.gc) > 0:
-        print(f"{EC.element_to_be_clickable((By.CSS_SELECTOR,'.shimmer'))}")
+    clicker.gc = clicker.driver.find_elements(by="css selector", value=".shimmer")  # finds golden cookies to click
+    while len(clicker.gc) > 0:  # if a golden cookie is found, click it
+        print(f"{EC.element_to_be_clickable((By.CSS_SELECTOR, '.shimmer'))}")
         try:
             clicker.golden_cookie_check()
         except:
@@ -71,6 +73,7 @@ while True:
 
     clicker.main_click()  # does most of the clicking
 
+    # Admin mode control, see README for details
     if keyboard.is_pressed("home"):
         clicker.stop_func()
         if clicker.user_input == "garden":
@@ -110,11 +113,12 @@ while True:
     if time.time() > print_timeout:
         print(f"New timeout set! It is: {timeout - time.time()}")
         print_timeout = time.time() + 60
-
+    # clicks elder pledge
     if time.time() > elder_timeout:
         clicker.elder_pledge()
         elder_timeout = time.time() + (1810)
 
+    # run save to file logic
     if time.time() > save_timeout:
         time.sleep(1)
         print("trying to save file...")
@@ -127,8 +131,7 @@ while True:
             save_timeout = time.time() + 1800
             clicker.close_menus()
 
-
-    # After 5 minutes stop the bot and check the cookies per second count.
+    # Close the program after a long time
     if time.time() > program_timeout:
         clicker.save_file()
         cookie_per_s = driver.find_element(by="id", value="cookies").text
